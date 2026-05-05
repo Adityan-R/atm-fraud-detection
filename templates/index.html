@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Detecter 9000</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #050a0e;
+    --panel:     #080f14;
+    --border:    #0d2233;
+    --accent:    #00d4ff;
+    --accent2:   #00ff88;
+    --danger:    #ff3355;
+    --warn:      #ffaa00;
+    --text:      #c8e0ed;
+    --muted:     #3a5568;
+    --green:     #00ff88;
+    --yellow:    #ffaa00;
+    --red:       #ff3355;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.03) 0%, transparent 60%);
+  }
+
+  /* ── SCANLINE EFFECT ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .header h1 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+  }
+
+  .header p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 6px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .status-bar {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  .status-dot {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  /* ── MAIN CARD ── */
+  .atm-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow:
+      0 0 40px rgba(0,212,255,0.06),
+      inset 0 1px 0 rgba(0,212,255,0.1);
+    animation: fadeUp 0.5s ease;
+  }
+
+  .card-header {
+    background: rgba(0,212,255,0.05);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-header-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .step-indicator {
+    display: flex;
+    gap: 6px;
+  }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    transition: all 0.3s;
+  }
+
+  .step-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .step-dot.done {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .card-body { padding: 32px 28px; }
+
+  /* ── STEPS ── */
+  .step { display: none; animation: fadeIn 0.4s ease; }
+  .step.active { display: block; }
+
+  .step-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .step-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+  }
+
+  /* ── INPUTS ── */
+  .input-group { margin-bottom: 20px; }
+
+  .input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .input-group input {
+    width: 100%;
+    background: rgba(0,212,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+
+  .input-group input::placeholder { color: var(--muted); letter-spacing: 1px; }
+
+  /* ── LOCATION TOGGLE ── */
+  .location-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .loc-btn {
+    padding: 16px;
+    background: rgba(0,212,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .loc-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .loc-btn.selected {
+    border-color: var(--accent2);
+    background: rgba(0,255,136,0.05);
+    color: var(--accent2);
+    box-shadow: 0 0 12px rgba(0,255,136,0.1);
+  }
+
+  .loc-btn .loc-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+
+  /* ── BUTTON ── */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+    z-index: -1;
+  }
+
+  .btn:hover { color: var(--bg); }
+  .btn:hover::before { transform: translateX(0); }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn:disabled:hover { color: var(--accent); }
+  .btn:disabled:hover::before { transform: translateX(-100%); }
+
+  /* ── ERROR MSG ── */
+  .error-msg {
+    color: var(--danger);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    margin-top: 10px;
+    min-height: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* ── PROCESSING ── */
+  .processing {
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .processing-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    animation: blink 1s infinite;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: progress 1.5s ease forwards;
+  }
+
+  /* ── VERDICT ── */
+  #step-verdict { display: none; }
+
+  .verdict-box {
+    text-align: center;
+    padding: 28px 0 24px;
+  }
+
+  .verdict-icon { font-size: 3.5rem; margin-bottom: 12px; }
+
+  .verdict-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+
+  .verdict-title.fraud { color: var(--danger); text-shadow: 0 0 20px rgba(255,51,85,0.5); }
+  .verdict-title.safe  { color: var(--green);  text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+
+  .verdict-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* ── CONFIDENCE BAR ── */
+  .confidence-section { margin: 24px 0; }
+
+  .confidence-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .conf-bar-bg {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .conf-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+    width: 0%;
+  }
+
+  .conf-bar-fill.fraud {
+    background: linear-gradient(90deg, var(--warn), var(--danger));
+    box-shadow: 0 0 8px rgba(255,51,85,0.4);
+  }
+
+  .conf-bar-fill.safe {
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    box-shadow: 0 0 8px rgba(0,255,136,0.4);
+  }
+
+  /* ── BREAKDOWN TABLE ── */
+  .breakdown {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .breakdown-header {
+    background: rgba(0,212,255,0.05);
+    padding: 10px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(13,34,51,0.5);
+    font-size: 0.9rem;
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .breakdown-row .label { color: var(--muted); letter-spacing: 1px; }
+
+  .breakdown-row .val-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .breakdown-row .value {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text);
+  }
+
+  .risk-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .risk-dot.green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+  .risk-dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .risk-dot.red    { background: var(--red);    box-shadow: 0 0 6px var(--red); }
+
+  /* ── LOG TABLE ── */
+  .log-section {
+    width: 100%;
+    max-width: 520px;
+    margin-top: 24px;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .log-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .log-refresh {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: 1px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  .log-refresh:hover { text-decoration: underline; }
+
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .log-table th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .log-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(13,34,51,0.4);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+  }
+
+  .log-table tr:last-child td { border-bottom: none; }
+
+  .badge {
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .badge.fraud { background: rgba(255,51,85,0.15);  color: var(--danger); border: 1px solid rgba(255,51,85,0.3); }
+  .badge.safe  { background: rgba(0,255,136,0.1);   color: var(--green);  border: 1px solid rgba(0,255,136,0.2); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp   { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse    { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes blink    { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes progress { from { width: 0%; } to { width: 100%; } }
+  @keyframes glitch {
+    0%, 100% { text-shadow: 0 0 20px rgba(255,51,85,0.5); }
+    25% { text-shadow: -2px 0 cyan, 2px 0 red; }
+    75% { text-shadow: 2px 0 cyan, -2px 0 red; }
+  }
+
+  .verdict-title.fraud { animation: glitch 2s infinite; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FRAUD DETECTER 9000</h1>
+  <p>SIMULATED ATM TERMINAL — ML POWERED</p>
+  <div class="status-bar">
+    <span class="status-dot">MODEL ONLINE</span>
+    <span class="status-dot">DATABASE READY</span>
+  </div>
+</div>
+
+<div class="atm-card">
+  <div class="card-header">
+    <span class="card-header-title" id="step-label-top">STEP 1 OF 4</span>
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot"        id="dot-2"></div>
+      <div class="step-dot"        id="dot-3"></div>
+      <div class="step-dot"        id="dot-4"></div>
+    </div>
+  </div>
+
+  <div class="card-body">
+
+    <div class="step active" id="step-1">
+      <p class="step-label">STEP 01 — IDENTIFICATION</p>
+      <p class="step-title">Insert Card</p>
+      <div class="input-group">
+        <label>CARD NUMBER</label>
+        <input type="text" id="card-input" placeholder="Enter card number" maxlength="19" autocomplete="off">
+      </div>
+      <p class="error-msg" id="card-error"></p>
+      <button class="btn" id="card-btn" onclick="submitCard()">PROCEED →</button>
+    </div>
+
+    <div class="step" id="step-2">
+      <p class="step-label">STEP 02 — AUTHENTICATION</p>
+      <p class="step-title" id="pin-title">Enter PIN</p>
+      <div class="input-group">
+        <label>PIN</label>
+        <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="6" autocomplete="off">
+      </div>
+      <p class="error-msg" id="pin-error"></p>
+      <button class="btn" id="pin-btn" onclick="submitPin()">CONFIRM →</button>
+    </div>
+
+    <div class="step" id="step-3">
+      <p class="step-label">STEP 03 — LOCATION</p>
+      <p class="step-title">ATM Location</p>
+      <div class="location-options">
+        <button class="loc-btn selected" id="loc-0" onclick="selectLocation(0)">
+          <span class="loc-icon">🏦</span>
+          My Usual ATM
+        </button>
+        <button class="loc-btn" id="loc-1" onclick="selectLocation(1)">
+          <span class="loc-icon">📍</span>
+          Different ATM
+        </button>
+      </div>
+      <button class="btn" onclick="goToAmount()">CONTINUE →</button>
+    </div>
+
+    <div class="step" id="step-4">
+      <p class="step-label">STEP 04 — TRANSACTION</p>
+      <p class="step-title">Withdrawal Amount</p>
+      <div class="input-group">
+        <label>AMOUNT (RS.)</label>
+        <input type="number" id="amount-input" placeholder="Enter amount" min="1" max="100000">
+      </div>
+      <p class="error-msg" id="amount-error"></p>
+      <button class="btn" id="amount-btn" onclick="submitTransaction()">PROCESS TRANSACTION →</button>
+    </div>
+
+    <div class="step" id="step-processing">
+      <div class="processing">
+        <p class="processing-text">ANALYSING TRANSACTION...</p>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="step" id="step-verdict">
+      <div class="verdict-box">
+        <div class="verdict-icon" id="verdict-icon"></div>
+        <div class="verdict-title" id="verdict-title"></div>
+        <div class="verdict-sub"  id="verdict-sub"></div>
+      </div>
+
+      <div class="confidence-section">
+        <div class="confidence-label">
+          <span>FRAUD PROBABILITY</span>
+          <span id="conf-pct"></span>
+        </div>
+        <div class="conf-bar-bg">
+          <div class="conf-bar-fill" id="conf-bar"></div>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-header">FEATURE ANALYSIS</div>
+        <div id="breakdown-rows"></div>
+      </div>
+
+      <button class="btn" onclick="resetATM()" style="margin-top:8px;">NEW TRANSACTION →</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="log-section">
+  <div class="log-header">
+    <span class="log-title">RECENT TRANSACTIONS</span>
+    <button class="log-refresh" onclick="loadLog()">REFRESH</button>
+  </div>
+  <table class="log-table" id="log-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>TIME</th>
+        <th>ACCT</th>
+        <th>AMOUNT</th>
+        <th>VERDICT</th>
+        <th>CONF</th>
+      </tr>
+    </thead>
+    <tbody id="log-body">
+      <tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px;">No transactions yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  let selectedLocation = 0;
+  let currentStep = 1;
+
+  // ── STEP NAVIGATION ──
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+
+    // Update dots
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'step-dot';
+      if (i < n)  dot.classList.add('done');
+      if (i === n) dot.classList.add('active');
+    }
+
+    const labels = { 1:'STEP 1 OF 4', 2:'STEP 2 OF 4', 3:'STEP 3 OF 4', 4:'STEP 4 OF 4' };
+    if (labels[n]) document.getElementById('step-label-top').textContent = labels[n];
+    currentStep = n;
+  }
+
+  // ── CARD ──
+  async function submitCard() {
+    const card = document.getElementById('card-input').value.trim();
+    const btn  = document.getElementById('card-btn');
+    const err  = document.getElementById('card-error');
+    err.textContent = '';
+    btn.disabled = true;
+
+    const res  = await fetch('/api/card', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card })
+    });
+    const data = await res.json();
+    btn.disabled = false;
+
+    if (!data.success) { err.textContent = data.error; return; }
+
+    document.getElementById('pin-title').textContent =
+      data.is_new ? 'Set a PIN' : 'Enter PIN';
+    showStep(2);
+  }
+
+  // ── PIN ──
+  async function submitPin() {
+    const pin = document.getElementById('pin-input').value.trim();
+    const btn = document.getElementById('pin-btn');
+    const err = document.getElementById('pin-error');
+    err.textContent = '';
+    btn.disabled = true;
+
+    const res  = await fetch('/api/pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    const data = await res.json();
+    btn.disabled = false;
+
+    if (!data.success) {
+      if (data.locked) {
+        showVerdict({ verdict:'FRAUD', confidence:0.99,
+          breakdown: [{ label:'PIN attempts', value:'5 (max)', risk:'red' }] });
+        loadLog();
+        return;
+      }
+      err.textContent = data.error;
+      return;
+    }
+    showStep(3);
+  }
+
+  // ── LOCATION ──
+  function selectLocation(val) {
+    selectedLocation = val;
+    document.getElementById('loc-0').classList.toggle('selected', val === 0);
+    document.getElementById('loc-1').classList.toggle('selected', val === 1);
+  }
+
+  function goToAmount() { showStep(4); }
+
+  // ── TRANSACTION ──
+  async function submitTransaction() {
+    const amount = document.getElementById('amount-input').value.trim();
+    const btn    = document.getElementById('amount-btn');
+    const err    = document.getElementById('amount-error');
+    err.textContent = '';
+
+    if (!amount || isNaN(amount)) { err.textContent = 'Enter a valid amount.'; return; }
+    if (amount <= 0)               { err.textContent = 'Amount must be greater than 0.'; return; }
+    if (amount > 100000)           { err.textContent = 'Maximum withdrawal is Rs.100000.'; return; }
+
+    btn.disabled = true;
+
+    // Show processing
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-processing').classList.add('active');
+    document.getElementById('step-label-top').textContent = 'PROCESSING';
+
+    const res  = await fetch('/api/transaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: parseInt(amount), is_new_location: selectedLocation })
+    });
+    const data = await res.json();
+
+    setTimeout(() => {
+      if (!data.success) { err.textContent = data.error; showStep(4); btn.disabled = false; return; }
+      
+      // --- IMPOSSIBLE TRAVEL POPUP TRIGGER ---
+      if (data.warning) {
+        alert("⚠️ SECURITY ALERT ⚠️\n\n" + data.warning);
+      }
+
+      showVerdict(data);
+      loadLog();
+    }, 1800);
+  }
+
+  // ── VERDICT ──
+  function showVerdict(data) {
+    const isFraud = data.verdict === 'FRAUD';
+    const conf    = data.confidence;
+
+    document.getElementById('verdict-icon').textContent  = isFraud ? '🚨' : '✅';
+    document.getElementById('verdict-title').textContent = isFraud ? 'TRANSACTION BLOCKED' : 'TRANSACTION APPROVED';
+    document.getElementById('verdict-title').className   = 'verdict-title ' + (isFraud ? 'fraud' : 'safe');
+    document.getElementById('verdict-sub').textContent   = isFraud ? 'FRAUDULENT ACTIVITY DETECTED' : 'HAVE A NICE DAY';
+    document.getElementById('conf-pct').textContent      = (conf * 100).toFixed(1) + '%';
+
+    const bar = document.getElementById('conf-bar');
+    bar.className = 'conf-bar-fill ' + (isFraud ? 'fraud' : 'safe');
+    setTimeout(() => { bar.style.width = (conf * 100) + '%'; }, 100);
+
+    // Breakdown rows
+    const container = document.getElementById('breakdown-rows');
+    container.innerHTML = '';
+    (data.breakdown || []).forEach(row => {
+      const div = document.createElement('div');
+      div.className = 'breakdown-row';
+      div.innerHTML = `
+        <span class="label">${row.label}</span>
+        <span class="val-wrap">
+          <span class="value">${row.value}</span>
+          <span class="risk-dot ${row.risk}"></span>
+        </span>`;
+      container.appendChild(div);
+    });
+
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-verdict').style.display = 'block';
+    document.getElementById('step-verdict').classList.add('active');
+    document.getElementById('step-label-top').textContent = 'RESULT';
+
+    // Update all dots to done
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'step-dot done';
+    }
+  }
+
+  // ── RESET ──
+  function resetATM() {
+    document.getElementById('card-input').value  = '';
+    document.getElementById('pin-input').value   = '';
+    document.getElementById('amount-input').value = '';
+    document.getElementById('card-error').textContent   = '';
+    document.getElementById('pin-error').textContent    = '';
+    document.getElementById('amount-error').textContent = '';
+    document.getElementById('step-verdict').style.display = 'none';
+    document.getElementById('conf-bar').style.width = '0%';
+    selectedLocation = 0;
+    selectLocation(0);
+    showStep(1);
+    document.getElementById('card-input').focus();
+  }
+
+  // ── TRANSACTION LOG ──
+  async function loadLog() {
+    const res  = await fetch('/api/log');
+    const rows = await res.json();
+    const body = document.getElementById('log-body');
+
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px;">No transactions yet</td></tr>';
+      return;
+    }
+
+    body.innerHTML = rows.map(r => {
+      const ts      = r.timestamp.substring(0, 16).replace('T', ' ');
+      const isFraud = r.verdict === 'FRAUD';
+      return `
+        <tr>
+          <td>${r.id}</td>
+          <td>${ts}</td>
+          <td>${r.account_id}</td>
+          <td>Rs.${r.amount}</td>
+          <td><span class="badge ${isFraud ? 'fraud' : 'safe'}">${r.verdict}</span></td>
+          <td>${(r.confidence * 100).toFixed(1)}%</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── ENTER KEY SUPPORT ──
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (currentStep === 1) submitCard();
+    if (currentStep === 2) submitPin();
+    if (currentStep === 4) submitTransaction();
+  });
+
+  // Load log on start
+  loadLog();
+</script>
+</body>
+</html>
