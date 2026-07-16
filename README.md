@@ -1,16 +1,16 @@
-# 🏧 ATM Fraud Detection Simulator
+# ATM Fraud Detection Simulator
 
 A real-time ATM fraud detection system combining **Arduino hardware** with a **Python/scikit-learn ML backend**. Simulates an ATM interface using a keypad and LCD display, while a trained Random Forest model flags suspicious transactions on the fly.
 
 ---
 
-## 🔍 Overview
+## Overview
 
 This project bridges embedded hardware and machine learning to demonstrate how fraud detection works at the transaction level. A physical ATM interface (Arduino + keypad + LCD) sends transaction data to a Python backend, which runs inference using a trained classifier and returns a fraud/legitimate verdict in real time.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 [Arduino + Keypad + LCD]
@@ -28,18 +28,18 @@ This project bridges embedded hardware and machine learning to demonstrate how f
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔐 Real-time transaction fraud classification
-- 🤖 Random Forest model with weighted loss for imbalanced fraud data
-- 🖥️ PC-side socket simulator — test without physical hardware
-- 📊 Confusion matrix comparison and model evaluation tools
-- 🔌 Arduino serial interface for physical ATM simulation
-- 📁 SQLite transaction logging
+- Real-time transaction fraud classification
+- Random Forest model with weighted loss for imbalanced fraud data
+- PC-side socket simulator — test without physical hardware
+- Confusion matrix comparison and model evaluation tools
+- Arduino serial interface for physical ATM simulation(support is there but is functional without it as well)
+- SQLite transaction logging
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -52,7 +52,7 @@ This project bridges embedded hardware and machine learning to demonstrate how f
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 atm-fraud-detection/
@@ -73,7 +73,7 @@ atm-fraud-detection/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python 3.8+
@@ -115,7 +115,7 @@ python app.py         # Starts the Flask backend
 
 ---
 
-## 📊 Model Details
+## Model Details
 
 - **Algorithm**: Random Forest Classifier
 - **Training Data**: Synthetically generated transaction records
@@ -124,7 +124,7 @@ python app.py         # Starts the Flask backend
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Phase 1 — Synthetic data generation & model training
 - [x] Phase 2 — Flask backend & fraud inference engine
@@ -133,7 +133,7 @@ python app.py         # Starts the Flask backend
 
 ---
 
-## 👤 Author
+## Author
 
 **Adityan R**  
 BTech CSE (AI/ML) — Lovely Professional University  
@@ -141,6 +141,6 @@ BTech CSE (AI/ML) — Lovely Professional University
 
 ---
 
-## 📄 License
+## License
 
 This project is for academic and educational purposes.
